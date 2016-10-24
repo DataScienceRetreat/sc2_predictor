@@ -11,7 +11,7 @@ def main(args):
 
 	f = open(args[1], 'r')
 	for line in f:
-		print('current line: {}'.format(line))
+		print('video: {}'.format(line.strip()))
 		VideoDownloader.VideoDownloader(line.split(' ')).download()
 
 if __name__ == "__main__":

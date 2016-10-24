@@ -34,7 +34,6 @@ class VideoDownloader:
 			video_format=video_format,
 			url=url)
 
-		print(bashCommand)
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 		self.output, self.error = process.communicate()
 		
