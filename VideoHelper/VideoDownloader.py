@@ -8,35 +8,30 @@ class VideoDownloader:
 	args: [url, ?start_time, ?end_time]
 	file format: ID_TITLE.mp4
 	'''
-	def __init__(self, args):
-		self.args = args
+	def __init__(self, url):
+		self.url = url
+		self.dest = "data/video/"
 
 	def download(self):
+		# print('starting download {}'.format(self.url))
+		print('.', end="")
 
-		if(len(self.args) == 0):
+		if(len(self.url) < 5):
 			print('NO URL GIVEN =/ TELL ME WHAT DO DOWNLOAD PLS')
 			return -1
 
-
-		fps = 2
-		width = 256
-		height = 256
 		video_format = "mp4"
+		# force format with --recode-video {video_format}
 
-		url = str(self.args[0]).strip()
-
-		if(len(self.args) > 1):
-			start_time = self.args[1]
-		if(len(self.args) > 2):
-			end_time = self.args[2]
-
-		bashCommand = """youtube-dl -f bestvideo[height<=?360] --recode-video {video_format} -o data/%(id)s_%(title)s.%(ext)s {url}""".format(
-			video_format=video_format,
-			url=url)
+		bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s#%(title)s.%(ext)s {url}""".format(
+			url=self.url,
+			dest=self.dest)
 
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 		self.output, self.error = process.communicate()
 		
+		print('done with download')
+
 		if(not self.error):
 			return 0
 		else:

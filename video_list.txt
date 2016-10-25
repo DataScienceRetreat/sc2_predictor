@@ -1,3 +1,9 @@
+## list of video files
+## raw comments: ##
+## comments to be printed: #
+#
+# kespa cup
+#
 https://www.youtube.com/watch?v=KYZ2_INFAOc
 https://www.youtube.com/watch?v=DJrcCsFn_no
 https://www.youtube.com/watch?v=_W629Muovp4
@@ -26,3 +32,19 @@ https://www.youtube.com/watch?v=AkrkZWdchbc
 https://www.youtube.com/watch?v=RlVGYHOxfYY
 https://www.youtube.com/watch?v=nT9zzN4Ydhg
 https://www.youtube.com/watch?v=ihUedmzxGLQ
+
+# misc
+https://www.youtube.com/watch?v=0M3rGNWZTlk
+https://www.youtube.com/watch?v=IDJKYpmNY88
+https://www.youtube.com/watch?v=gCoTWmtYL1s
+https://www.youtube.com/watch?v=EbyzpHgcDho
+https://www.youtube.com/watch?v=HJPfDtdLtlI
+https://www.youtube.com/watch?v=M4CyQAJhn4U
+https://www.youtube.com/watch?v=KIj9yFDbD9Y
+https://www.youtube.com/watch?v=MtEfiYjOF6w
+https://www.youtube.com/watch?v=xYYMsc7ponY
+https://www.youtube.com/watch?v=dwNg0522gy0
+https://www.youtube.com/watch?v=E6-eS_s2NNE
+https://www.youtube.com/watch?v=nL7bXYKUkLg
+https://www.youtube.com/watch?v=BaJCFzJIiYg
+https://www.youtube.com/watch?v=DJplNO8bfEA
