@@ -1,18 +1,11 @@
 #!/usr/bin/env python3
 import sys
 import _thread
-from os import listdir
-from os.path import isfile, join
 
 from VideoHelper.VideoDownloader import VideoDownloader
 from VideoHelper.Video2Images import Video2Images
 from VideoHelper.ImageClassifier import ImageClassifier
-
-def get_files_in_dir(dir_path):
-	return [f for f in listdir(dir_path) if isfile(join(dir_path, f)) and len(f) > 10]
-
-def get_unique_ids(dir_path):
-	return set(f.split('#')[0] for f in get_files_in_dir(dir_path))
+from VideoHelper.HelperFunctions import get_files_in_dir, get_unique_ids
 
 def main(args):
 	video_path = 'data/video/'
@@ -36,8 +29,8 @@ def main(args):
 		VideoDownloader(url).download()
 	
 	f.close()
-
-	print('got all videos in {filename}'.format(filename=args[1]))
+	
+	print('\ngot all videos in {filename}'.format(filename=args[1]))
 	print('generating thumbnail from files')
 
 	video_files = get_files_in_dir(video_path)
@@ -50,12 +43,8 @@ def main(args):
 			continue
 
 		Video2Images(f).create_thumbnails()
-
-	print('\ndone with thumbnails')
-	print('classify thumbnails nooow')
 	
-	ImageClassifier(get_files_in_dir(img_path))
-
-
+	print('\ndone with thumbnails')
+	
 if __name__ == "__main__":
 	main(sys.argv)

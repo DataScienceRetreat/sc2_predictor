@@ -30,7 +30,7 @@ class VideoDownloader:
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 		self.output, self.error = process.communicate()
 		
-		print('done with download')
+		# print('done with download')
 
 		if(not self.error):
 			return 0
