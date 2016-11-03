@@ -6,6 +6,7 @@ from time import sleep
 import datetime
 import os.path
 
+from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 
 class ImageClassifier:
     '''
@@ -20,9 +21,14 @@ class ImageClassifier:
             filename=filename,
             source=source)
 
-    def __init__(self, file_list, source='./data/img/', prev_file='img_class_full.csv'):
+    def __init__(self, img_path, prev_file='img_class_full.csv'):
 
-        self.source = source
+        print('classify thumbnails')
+        print('0 -> in-game, 1 -> everything out of game')
+
+        files = get_files_in_dir(img_path, file_extension=False)
+
+        self.source = img_path
         self.prev_file = prev_file
 
         has_prev_file = os.path.isfile(prev_file)
@@ -30,10 +36,15 @@ class ImageClassifier:
 
         if(has_prev_file):
             self.df_prev = pd.read_csv(self.prev_file, index_col='filename')
-            self.file_list = [f for f in file_list if not self.df_prev.index.str.contains(f).any()]
+            self.file_list = [
+                f for f in files if not self.df_prev.index.str.contains(f).any()]
         else:
-            self.file_list = [f for f in file_list]
+            self.file_list = [f for f in files]
 
+        if(len(self.file_list) == 0):
+        	print("no new files to be classified")
+        	return
+        
         print("new files: {}".format(len(self.file_list)))
 
         df = pd.DataFrame(np.zeros(len(self.file_list), dtype=np.int), index=self.file_list,
@@ -45,7 +56,7 @@ class ImageClassifier:
         #  - erase files not classified from df
         #  - run append operation after for loop
 
-        n_files = len(file_list)
+        n_files = len(self.file_list)
 
         for idx, f in enumerate(self.file_list):
             if(idx % 10 == 0):
@@ -61,8 +72,6 @@ class ImageClassifier:
                     break
 
             df.loc[f] = file_class
-
-        print(df.head())
 
         now = datetime.datetime.now()
         df.to_csv('img_class_new' + str(now.timestamp()) +

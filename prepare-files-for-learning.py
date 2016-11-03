@@ -33,7 +33,7 @@ def copy_img(source, class_name, dest_path='data/', test_ratio=0.7):
 def main(args):
 
 	if(len(args) < 2):
-		print('define .csv file and path to input folder')
+		print('define .csv file and path to image input folder')
 		return -1
 
 	filename = args[1]
