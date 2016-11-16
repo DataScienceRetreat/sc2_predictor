@@ -22,7 +22,7 @@ class Video2Images:
 			fps=self.fps,
 			title=self.title,
 			dest=self.dest)
-
+		
 		print('.', end="")
 
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)

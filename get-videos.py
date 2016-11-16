@@ -33,7 +33,7 @@ def main(args):
 	print('\ngot all videos in {filename}'.format(filename=args[1]))
 	print('generating thumbnail from files')
 
-	video_files = get_files_in_dir(video_path)
+	video_files = get_files_in_dir(video_path, file_extension=True)
 	unique_img_ids = get_unique_ids(img_path)
 
 	print('found {n} videos'.format(n = len(video_files)))
