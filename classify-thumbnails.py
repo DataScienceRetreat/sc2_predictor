@@ -7,7 +7,7 @@ from VideoHelper.HelperFunctions import path_is_dir
 def main(args):
 	
 	if(len(args) < 2):
-		print('give image folder (and existing csv class file) pls')
+		print('give image folder (and optional existing csv class file) pls')
 		return -1
 
 	img_path = args[1]
