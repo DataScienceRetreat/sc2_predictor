@@ -24,7 +24,6 @@ class ImageClassifier:
     def __init__(self, img_path, prev_file='img_class_full.csv'):
 
         print('classify thumbnails')
-        print('0 -> in-game, 1 -> everything out of game')
 
         files = get_files_in_dir(img_path, file_extension=False)
 
