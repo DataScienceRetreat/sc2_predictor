@@ -1,3 +1,6 @@
 scikit-image
 pydot-ng
 keras
+numpy
+pandas
+opencv-python

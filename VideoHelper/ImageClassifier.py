@@ -44,8 +44,6 @@ class ImageClassifier:
         	print("no new files to be classified")
         	return
         
-        print("new files: {}".format(len(self.file_list)))
-
         df = pd.DataFrame(np.zeros(len(self.file_list), dtype=np.int), index=self.file_list,
                           columns=['class'])
 
@@ -56,6 +54,12 @@ class ImageClassifier:
         #  - run append operation after for loop
 
         n_files = len(self.file_list)
+        
+        print("new files: {}".format(n_files))
+        answer = input("do all or enter number [all|<number>]: ")
+        
+        if answer.strip() != 'all'  
+            n_files = int(answer)
 
         for idx, f in enumerate(self.file_list):
             if(idx % 10 == 0):
@@ -71,6 +75,9 @@ class ImageClassifier:
                     break
 
             df.loc[f] = file_class
+
+            if idx >= n_files:
+                break
 
         now = datetime.datetime.now()
         df.to_csv('img_class_new' + str(now.timestamp()) +

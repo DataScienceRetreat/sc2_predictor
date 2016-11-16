@@ -21,8 +21,8 @@ from keras.utils.visualize_util import plot
 #os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
 
-img_width = 90
-img_height = 160
+img_width = 160
+img_height = 90
 class_names = ['ingame', 'misc']
 train_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/test/'
 validation_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/validation/'
@@ -37,10 +37,14 @@ def get_sample_count(path, classes):
 
 nb_train_samples = get_sample_count(train_data_dir, class_names)
 nb_validation_samples = get_sample_count(validation_data_dir, class_names)
-nb_epoch = 15
+nb_epoch = 30
 
 model = Sequential()
 model.add(Convolution2D(32, 3, 3, input_shape=(3, img_width, img_height)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Convolution2D(32, 3, 3))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -61,9 +65,9 @@ model.compile(loss='binary_crossentropy',
 
 train_datagen = ImageDataGenerator(
         rescale=1./255,
-        #shear_range=0.2,
+        shear_range=0.2,
         zoom_range=0.2,
-        #horizontal_flip=True,
+        horizontal_flip=True,
         fill_mode='nearest'
 )
 
@@ -125,7 +129,7 @@ array_to_img(img[0])
 print(model.predict(img)) # should be 0
 print(model.predict(img_internet)) # should be 1
 
-filename = "NN_2Conv_03112016"
+filename = "NN_2Conv_16112016_4"
 
-model.save(filename + '.h5')
-plot(model, to_file=filename + '.png')
+model.save('models/ingame-classifier/' + filename + '.h5')
+plot(model, to_file='models/ingame-classifier/' + filename + '.png')

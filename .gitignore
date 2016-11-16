@@ -3,3 +3,4 @@
 *.cpython-35*
 __pycache__/
 data/
+.ipynb_checkpoints/
