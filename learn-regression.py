@@ -21,6 +21,7 @@ from keras.optimizers import SGD
 from scipy.misc import imread, imresize
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
+from NotificationSender import NotificationSender
 
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
@@ -42,25 +43,20 @@ def get_model(img_channels, img_width, img_height, path=None):
     model = Sequential()
 
     model.add(Convolution2D(48, 7, 7, border_mode='same',input_shape=(img_channels, img_width, img_height)))
-    model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Convolution2D(96, 5, 5, border_mode='same'))
-    model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
     model.add(Convolution2D(256, 3, 3, border_mode='same'))
-    model.add(BatchNormalization())
     model.add(Activation('relu'))
 
     model.add(Convolution2D(512, 3, 3, border_mode='same')) 
-    model.add(BatchNormalization())
     model.add(Activation('relu'))
 
     model.add(Convolution2D(512, 3, 3, border_mode='same'))
-    model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -106,12 +102,12 @@ def main(args):
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    nb_epoch = 5
+    nb_epoch = 50
     batch_size = 32
 
     model = get_model(img_channels, img_width, img_height)
-    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.1, momentum=0.9)) #'rmsprop')
-
+    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001, decay=1e-5, momentum=0.9))
+    
     print('fitting model')
     model.fit(X_train, y_train, nb_epoch=nb_epoch, batch_size=batch_size)
 
@@ -123,3 +119,5 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv)
+    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
+    

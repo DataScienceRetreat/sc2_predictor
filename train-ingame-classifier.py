@@ -133,3 +133,4 @@ filename = "NN_2Conv_16112016_4"
 
 model.save('models/ingame-classifier/' + filename + '.h5')
 plot(model, to_file='models/ingame-classifier/' + filename + '.png')
+
