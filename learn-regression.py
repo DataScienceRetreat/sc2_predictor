@@ -63,10 +63,10 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.7))
+    model.add(Dropout(0.5))
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.8))
+    model.add(Dropout(0.5))
 
     model.add(Dense(1))
     model.add(Activation('linear'))
@@ -106,7 +106,7 @@ def main(args):
     batch_size = 32
 
     model = get_model(img_channels, img_width, img_height)
-    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.001, decay=1e-5, momentum=0.9))
+    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.01, momentum=0.9))
     
     print('fitting model')
     model.fit(X_train, y_train, nb_epoch=nb_epoch, batch_size=batch_size)
