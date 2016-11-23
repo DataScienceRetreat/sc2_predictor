@@ -9,9 +9,12 @@ packages:
 runcmd:
 - sudo rm /var/lib/dpkg/lock
 - sudo dpkg --configure -a
-- sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils
+- sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils htop
 - sudo apt-get install -y python3-venv
 - sudo apt-get install -y nfs-common
+- pyenv install 3.5.2
+- pyenv global 3.5.2
+- pip install -U pip
 - mkdir -p /var/www/html/efs/data/
 - chown ubuntu:ubuntu /var/www/html/efs/
 - chown ubuntu:ubuntu /var/www/html/efs/data/
