@@ -14,8 +14,9 @@ import h5py
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers import Activation, Dropout, Flatten, Dense, Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD
-from keras.utils.visualize_util import plot
+# from keras.utils.visualize_util import plot
 
 from scipy.misc import imread, imresize
 
@@ -35,59 +36,44 @@ def save_model(model, path):
     model.save(path + 'models/interestingness/' + filename + '.h5')
     plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
     
-def get_vgg16_model(img_channels, img_width, img_height, path=None):
-    print('building vgg16')
+def get_model(img_channels, img_width, img_height, path=None):    
+    print('building neural network')
 
     model = Sequential()
-    model.add(ZeroPadding2D((1, 1), input_shape=(img_channels, img_width, img_height)))
 
-    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_1'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(64, 3, 3, activation='relu', name='conv1_2'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Convolution2D(48, 7, 7, border_mode='same',input_shape=(img_channels, img_width, img_height)))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_1'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(128, 3, 3, activation='relu', name='conv2_2'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Convolution2D(96, 5, 5, border_mode='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_1'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_2'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(256, 3, 3, activation='relu', name='conv3_3'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
 
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_1'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_2'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv4_3'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Convolution2D(512, 3, 3, border_mode='same')) 
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
 
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_1'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_2'))
-    model.add(ZeroPadding2D((1, 1)))
-    model.add(Convolution2D(512, 3, 3, activation='relu', name='conv5_3'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+    model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-    # load the weights of the VGG16 networks
-    # (trained on ImageNet, won the ILSVRC competition in 2014)
-    assert os.path.exists(path), 'model weights not found'
-    f = h5py.File(path)
-    for k in range(f.attrs['nb_layers']):
-        if k >= len(model.layers):
-            # we don't look at the last (fully-connected) layers in the savefile
-            break
-        g = f['layer_{}'.format(k)]
-        weights = [g['param_{}'.format(p)] for p in range(g.attrs['nb_params'])]
-        model.layers[k].set_weights(weights)
-    f.close()
+    model.add(Flatten())
+    model.add(Dense(512))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.7))
+    model.add(Dense(512))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.8))
+
+    model.add(Dense(1))
+    model.add(Activation('linear'))
     print('model loaded')
 
     return model
@@ -96,7 +82,6 @@ def main(args):
     img_width = 160
     img_height = 90
     img_channels = 3
-    vgg16_path = 'models/vgg16/vgg16_weights.h5'
 
     regression_range = list(range(0, 5))
 
@@ -124,28 +109,9 @@ def main(args):
     nb_epoch = 5
     batch_size = 32
 
-    print('building neural network')
-
-    model = get_vgg16_model(img_channels, img_width, img_height, data_path + vgg16_path)
-    print(model.output_shape)
-
-    top_model = Sequential()
-    top_model.add(Flatten(input_shape=model.output_shape[1:]))
-    top_model.add(Dense(32))
-    top_model.add(Activation('relu'))
-    top_model.add(Dropout(0.5))
-    top_model.add(Dense(1))
-    top_model.add(Activation('linear'))
-
-    model.add(top_model)
-
-    # set the first 25 layers (up to the last conv block)
-    # to non-trainable (weights will not be updated)
-    for layer in model.layers[:25]:
-        layer.trainable = False
-
+    model = get_model(img_channels, img_width, img_height)
     model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.1, momentum=0.9)) #'rmsprop')
-    return -1
+
     print('fitting model')
     model.fit(X_train, y_train, nb_epoch=nb_epoch, batch_size=batch_size)
 
