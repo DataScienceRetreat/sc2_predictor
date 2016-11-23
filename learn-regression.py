@@ -43,7 +43,10 @@ def main(args):
     print('loading data from csv')
 
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
-    X_train, y_train, X_test, y_test = train_test_split(X, y, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+    print('X_train shape {}'.format(X_train.shape))
+    print('y_train shape {}'.format(y_train.shape))
 
     nb_epoch = 15
     batch_size = 32
