@@ -51,6 +51,7 @@ class ImageClassifier:
         new_columns = ""
         if 'interestingness' in self.prev_file:
             new_column = ['interestingness']
+            self.new_filename = 'img_interestingness'
         else:
             new_column = ['class']
 

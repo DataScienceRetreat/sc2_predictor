@@ -1,0 +1,23 @@
+# AWS Config/Help
+# fill this in EC2 instance configuration
+# in field 'User Data'
+
+#cloud-config
+package_upgrade: true
+packages:
+- nfs-utils
+runcmd:
+- sudo rm /var/lib/dpkg/lock
+- sudo dpkg --configure -a
+- sudo apt-get install -y nfs-common
+- mkdir -p /var/www/html/efs/data/
+- chown ubuntu:ubuntu /var/www/html/efs/
+- chown ubuntu:ubuntu /var/www/html/efs/data/
+- echo "$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone).fs-16d428df.efs.eu-west-1.amazonaws.com:/ /var/www/html/efs nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 0 0" >> /etc/fstab
+- mount -a -t nfs4
+
+# if script doesnt work:
+# install nfs-common manually
+# and mount to folder efs
+# with this command:
+# sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 $(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone).fs-16d428df.efs.eu-west-1.amazonaws.com:/ efs

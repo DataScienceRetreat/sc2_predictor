@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation
@@ -66,4 +67,7 @@ model.compile(loss='mean_squared_error', optimizer='rmsprop')
 print('fitting model')
 
 model.fit(X_train, y_train, nb_epoch=nb_epoch, batch_size=batch_size)
-score = model.evaluate(X_test, y_test, batch_size=batch_size)
+#score = model.evaluate(X_test, y_test, batch_size=batch_size)
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+print('mean squared error {}'.format(mse))
