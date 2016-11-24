@@ -8,7 +8,7 @@ import pandas as pd
 import shutil
 import random
 
-from VideoHelper.HelperFunctions import get_files_in_dir
+from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 
 def setup_folders(class_names, path='data/'):
 	test_path = path + 'test/'
@@ -20,41 +20,50 @@ def setup_folders(class_names, path='data/'):
 				os.makedirs(tmp_path + class_name)
 
 
-def copy_img(source, class_name, dest_path='data/', test_ratio=0.7):
+def copy_img(source, class_name, dest_path='data/', test_ratio=0.7, dry=False, verbose=False):
 	dest = ""
 
 	if random.random() > test_ratio:
 		dest = dest_path + 'validation/' + class_name
 	else:
 		dest = dest_path + 'test/' + class_name
-	#print("copy from {} to {}".format(source, dest))
-	shutil.copy(source, dest)
+	
+	if verbose:
+		print("copy from {} to {}".format(source, dest))
+	
+	if not(dry):
+		shutil.copy(source, dest)
 	
 def main(args):
 
-	if(len(args) < 2):
-		print('define .csv file and path to image input folder')
+	if(len(args) != 4):
+		print('define paths to image input folder, destination folder and .csv file')
 		return -1
 
-	filename = args[1]
-	folderpath = args[2]
-	class_names = ['ingame', 'misc']
+	img_path = args[1]
+	dest_path = args[2]
+	filename = args[3]
 
-	print('filename {}\nfolder {}'.format(filename, folderpath))
+	if (not(path_is_dir(img_path)) or not(path_is_dir(dest_path))):
+		print('given folders not available to load or save data')
+		return -1
+	
+	class_names = ['ingame', 'misc']	
+	print('filename {}\nfolder {}'.format(filename, img_path))
 
 	is_file = os.path.isfile(filename)
 	if(not is_file):
-		return -1
-
-	if not os.path.exists(folderpath):
+		print('given csv file not available')
 		return -1
 
 	setup_folders(class_names=class_names)
 
 	df = pd.read_csv(filename, names=['filename','class_name'], dtype={'class_name': np.int8 }, header=1)
-
+	print('start copying {} files'.format(df.shape[0]))
 	for t in df.itertuples():
-		copy_img(folderpath + t.filename + '.png', class_names[t.class_name])
+		copy_img(img_path + t.filename + '.png', class_names[t.class_name], dest_path)
+	
+	print('done')
 
 if __name__ == "__main__":
 	main(sys.argv)

@@ -4,7 +4,6 @@ import _thread
 
 from VideoHelper.VideoDownloader import VideoDownloader
 from VideoHelper.Video2Images import Video2Images
-from VideoHelper.ImageClassifier import ImageClassifier
 from VideoHelper.HelperFunctions import get_files_in_dir, get_unique_ids
 
 def main(args):

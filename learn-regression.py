@@ -1,5 +1,5 @@
 import os, sys
-#os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
+#os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu0,floatX=float32"
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
 
 import numpy as np
@@ -35,7 +35,7 @@ def save_model(model, path):
     now = str(time())
     filename = 'SC2_regr_' + now
     model.save(path + 'models/interestingness/' + filename + '.h5')
-    plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
+    # plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
     
 def get_model(img_channels, img_width, img_height, path=None):    
     print('building neural network')
@@ -45,25 +45,37 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(Convolution2D(48, 7, 7, border_mode='same',input_shape=(img_channels, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
     model.add(Convolution2D(96, 5, 5, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
-    model.add(Convolution2D(256, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-
-    model.add(Convolution2D(512, 3, 3, border_mode='same')) 
-    model.add(Activation('relu'))
-
-    model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
 
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.8))
     model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
@@ -71,6 +83,7 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(Dense(1))
     model.add(Activation('linear'))
     print('model loaded')
+
 
     return model
 
@@ -117,7 +130,8 @@ def main(args):
     mse = mean_squared_error(y_test, y_pred)
     print('mean squared error {}'.format(mse))
 
+    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
+
 if __name__ == "__main__":
     main(sys.argv)
-    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
     

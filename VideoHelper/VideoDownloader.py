@@ -15,7 +15,8 @@ class VideoDownloader:
 	def download(self):
 		# print('starting download {}'.format(self.url))
 		print('.', end="")
-
+		sys.stdout.flush()
+		
 		if(len(self.url) < 5):
 			print('NO URL GIVEN =/ TELL ME WHAT DO DOWNLOAD PLS')
 			return -1

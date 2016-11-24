@@ -8,7 +8,7 @@ import os.path
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 
-class ImageClassifier:
+class ManualImageClassifier:
     '''
     class to label images,
     uses quicklook on macOS to have a quick look at images

@@ -24,7 +24,8 @@ class Video2Images:
 			dest=self.dest)
 		
 		print('.', end="")
-
+		sys.stdout.flush()
+		
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 		self.output, self.error = process.communicate()
 		
