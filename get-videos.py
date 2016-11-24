@@ -6,17 +6,10 @@ from VideoHelper.VideoDownloader import VideoDownloader
 from VideoHelper.Video2Images import Video2Images
 from VideoHelper.HelperFunctions import get_files_in_dir, get_unique_ids
 
-def main(args):
-	video_path = 'data/video/'
-	img_path = 'data/img/'
-
-	if(len(args) < 2):
-		print('define input txt file with urls')
-		return -1
-
+def download_videos(txt_path, img_path, video_path):
 	unique_video_ids = get_unique_ids(video_path)
 	
-	f = open(args[1], 'r')
+	f = open(txt_path, 'r')
 	for line in f:
 		if(line[0] == '#') or (len(line) < 5):
 			continue
@@ -30,6 +23,8 @@ def main(args):
 	f.close()
 	
 	print('\ngot all videos in {filename}'.format(filename=args[1]))
+	
+def make_thumbnails(img_path, video_path):
 	print('generating thumbnail from files')
 
 	video_files = get_files_in_dir(video_path, file_extension=True)
@@ -44,6 +39,18 @@ def main(args):
 		Video2Images(f).create_thumbnails()
 	
 	print('\ndone with thumbnails')
+
+def main(args):
+	video_path = 'data/video/'
+	img_path = 'data/img/'
+
+	if(len(args) < 2):
+		print('no input txt file with urls defined')
+	else:
+		txt_path = args[1]
+		download_videos(txt_path, img_path, video_path)
+	
+	make_thumbnails(img_path, video_path)
 	
 if __name__ == "__main__":
 	main(sys.argv)
