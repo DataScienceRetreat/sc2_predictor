@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 #os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu0,floatX=float32"
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
 
@@ -23,6 +24,7 @@ from scipy.misc import imread, imresize
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 from NotificationSender import NotificationSender
 
+
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
     X = np.array([imresize(imread(img_path + row['filename'] + '.png'),
@@ -31,18 +33,21 @@ def csv_to_data(csv_path, img_path, target_shape):
     y = df.iloc[:, 1]
     return (X, y)
 
+
 def save_model(model, path):
     now = str(time())
     filename = 'SC2_regr_' + now
     model.save(path + 'models/interestingness/' + filename + '.h5')
     # plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
-    
-def get_model(img_channels, img_width, img_height, path=None):    
+
+
+def get_model(img_channels, img_width, img_height, path=None):
     print('building neural network')
 
     model = Sequential()
 
-    model.add(Convolution2D(48, 7, 7, border_mode='same',input_shape=(img_channels, img_width, img_height)))
+    model.add(Convolution2D(48, 7, 7, border_mode='same',
+                            input_shape=(img_channels, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
@@ -84,8 +89,8 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(Activation('linear'))
     print('model loaded')
 
-
     return model
+
 
 def main(args):
     img_width = 160
@@ -119,10 +124,12 @@ def main(args):
     batch_size = 32
 
     model = get_model(img_channels, img_width, img_height)
-    model.compile(loss='mean_squared_error', optimizer=SGD(lr=0.01, momentum=0.9))
-    
+    model.compile(loss='mean_squared_error',
+                  optimizer=SGD(lr=0.1, momentum=0.9))
+
     print('fitting model')
-    model.fit(X_train, y_train, nb_epoch=nb_epoch, batch_size=batch_size)
+    model.fit(X_train, y_train, nb_epoch=nb_epoch,
+              batch_size=batch_size, validation_set=(X_test, y_test))
 
     save_model(model, data_path)
 
@@ -134,4 +141,3 @@ def main(args):
 
 if __name__ == "__main__":
     main(sys.argv)
-    
