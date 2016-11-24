@@ -8,21 +8,25 @@ from VideoHelper.HelperFunctions import get_files_in_dir, get_unique_ids
 
 def download_videos(txt_path, img_path, video_path):
 	unique_video_ids = get_unique_ids(video_path)
-	
+	unique_img_ids = get_unique_ids(img_path)
+
+	print('found {n} videos'.format(n = len(video_files)))
+
 	f = open(txt_path, 'r')
 	for line in f:
 		if(line[0] == '#') or (len(line) < 5):
 			continue
 		
 		url = line.strip().split(' ')[0]
-		if(url.split('?v=')[-1] in unique_video_ids):
+		yt_id = url.split('?v=')[-1]
+		if(yt_id in unique_video_ids) or (yt_id in unique_img_ids):
 			continue
 
-		VideoDownloader(url).download()
+		VideoDownloader(url, video_path).download()
 	
 	f.close()
 	
-	print('\ngot all videos in {filename}'.format(filename=args[1]))
+	print('\ngot all videos in {filename}'.format(filename=txt_path))
 	
 def make_thumbnails(img_path, video_path):
 	print('generating thumbnail from files')

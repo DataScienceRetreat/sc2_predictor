@@ -10,9 +10,12 @@ import random
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 
-def setup_folders(class_names, path='data/'):
+def setup_folders(class_names, path='data/', noTestnoValid=False):
 	test_path = path + 'test/'
 	validation_path = path + 'validation/'
+
+	if noTestnoValid:
+		test_path, validation = path, path
 
 	for tmp_path in [test_path, validation_path]:
 		for class_name in class_names:
@@ -20,13 +23,17 @@ def setup_folders(class_names, path='data/'):
 				os.makedirs(tmp_path + class_name)
 
 
-def copy_img(source, class_name, dest_path='data/', test_ratio=0.7, dry=False, verbose=False):
+def copy_img(source, class_name, dest_path='data/', test_ratio=0.7, noTestnoValid=False, dry=False, verbose=False):
 	dest = ""
-
-	if random.random() > test_ratio:
-		dest = dest_path + 'validation/' + class_name
+	rand = random.random()
+	
+	if noTestnoValid:
+		dest = dest_path + class_name
 	else:
-		dest = dest_path + 'test/' + class_name
+		if rand > test_ratio:
+			dest = dest_path + 'validation/' + class_name
+		else:
+			dest = dest_path + 'test/' + class_name
 	
 	if verbose:
 		print("copy from {} to {}".format(source, dest))

@@ -8,9 +8,9 @@ class VideoDownloader:
 	args: [url, ?start_time, ?end_time]
 	file format: ID_TITLE.mp4
 	'''
-	def __init__(self, url):
+	def __init__(self, url, dest='data/video/'):
 		self.url = url
-		self.dest = "data/video/"
+		self.dest = dest
 
 	def download(self):
 		# print('starting download {}'.format(self.url))

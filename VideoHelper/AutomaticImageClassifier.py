@@ -62,7 +62,7 @@ class AutomaticImageClassifier:
         print('start to classify') 
         for idx, f in enumerate(self.file_list):
             if(idx % 10 == 0):
-                print('\r\r\r{0:3.2f}% done  🚀'.format(idx / float(n_files) * 100.0), end='')
+                print('\r\r\r{0:3.2f}% done  🚀  '.format(idx / float(n_files) * 100.0), end='')
                 sys.stdout.flush()
         
             img = np.array(imresize(imread(img_path + f + '.png'),
