@@ -10,8 +10,6 @@ def download_videos(txt_path, img_path, video_path):
 	unique_video_ids = get_unique_ids(video_path)
 	unique_img_ids = get_unique_ids(img_path)
 
-	print('found {n} videos'.format(n = len(video_files)))
-
 	f = open(txt_path, 'r')
 	for line in f:
 		if(line[0] == '#') or (len(line) < 5):

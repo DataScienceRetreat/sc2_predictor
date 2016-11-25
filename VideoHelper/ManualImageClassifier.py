@@ -37,12 +37,13 @@ class ManualImageClassifier:
         if(has_prev_file):
             self.df_prev = pd.read_csv(self.prev_file, index_col='filename')
             if self.df_prev.shape[0] == 0:
-                self.file_list = [f for f in files]
+                self.file_list = np.array(files)
             else:
-                self.file_list = [
-                    f for f in files if not self.df_prev.index.str.contains(f).any()]
+                tmp_index = self.df_prev.index.str
+                self.file_list = np.array([
+                    f for f in files if not tmp_index.contains(f).any()])
         else:
-            self.file_list = [f for f in files]
+            self.file_list = np.array(files)
 
         if(len(self.file_list) == 0):
         	print("no new files to be classified")
@@ -92,4 +93,5 @@ class ManualImageClassifier:
                   '.csv', index=True, header=True, index_label='filename', sep=',')
 
         self.df_prev.append(df).to_csv(
-            self.new_filename + '_full' + str(now.timestamp()) + '.csv', sep=',')
+            self.new_filename + '_full' + str(now.timestamp()) + '.csv', 
+            index_label='filename', sep=',')

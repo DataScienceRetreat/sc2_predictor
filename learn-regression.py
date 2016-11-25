@@ -28,7 +28,10 @@ from NotificationSender import NotificationSender
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
     X = np.array([imresize(imread(img_path + row['filename'] + '.png'),
-                           size=target_shape).transpose(2, 0, 1) for index, row in df.iterrows()], dtype=np.float32)
+                           size=target_shape).transpose(2, 0, 1)
+                  for index, row in df.iterrows()
+                  if os.path.isfile(img_path + row['filename'] + '.png')
+                  ], dtype=np.float32)
     X /= 255.
     y = df.iloc[:, 1]
     return (X, y)
