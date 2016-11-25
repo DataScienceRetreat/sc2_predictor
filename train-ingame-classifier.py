@@ -24,8 +24,8 @@ os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
 img_width = 160
 img_height = 90
 class_names = ['ingame', 'misc']
-train_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/test/'
-validation_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/validation/'
+train_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/train/'
+validation_data_dir = '/Users/holger/dev/projects/sc2_predictor/data/test/'
 img_path = '/Users/holger/dev/projects/sc2_predictor/data/img/'
 
 def get_sample_count(path, classes):
