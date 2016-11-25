@@ -1,7 +1,7 @@
 import os
 import sys
-#os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu0,floatX=float32"
-os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
+os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu0,floatX=float32"
+#os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
 
 import numpy as np
 import pandas as pd
@@ -27,13 +27,16 @@ from NotificationSender import NotificationSender
 
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
+
     X = np.array([imresize(imread(img_path + row['filename'] + '.png'),
                            size=target_shape).transpose(2, 0, 1)
-                  for index, row in df.iterrows()
-                  if os.path.isfile(img_path + row['filename'] + '.png')
+                  for index, row in df.iterrows() if os.path.isfile(img_path + row['filename'] + '.png')
                   ], dtype=np.float32)
     X /= 255.
-    y = df.iloc[:, 1]
+    y = np.array([row['interestingness'] for index, row in df.iterrows()
+        if os.path.isfile(img_path + row['filename'] + '.png')])
+    # y = df.iloc[:, 1]
+
     return (X, y)
 
 
@@ -111,7 +114,7 @@ def main(args):
         print('data path is wrooong')
         return -1
 
-    img_path = data_path + 'data/img/'
+    img_path = data_path + 'data/img/ingame/'
     if(not path_is_dir(img_path)):
         print('img path is wrooong')
         return -1
@@ -123,7 +126,7 @@ def main(args):
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    nb_epoch = 50
+    nb_epoch = 100
     batch_size = 32
 
     model = get_model(img_channels, img_width, img_height)
@@ -132,7 +135,7 @@ def main(args):
 
     print('fitting model')
     model.fit(X_train, y_train, nb_epoch=nb_epoch,
-              batch_size=batch_size, validation_set=(X_test, y_test))
+              batch_size=batch_size, validation_data=(X_test, y_test))
 
     save_model(model, data_path)
 
