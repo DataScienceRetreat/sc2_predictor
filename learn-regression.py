@@ -17,7 +17,7 @@ from keras.layers.core import Dense, Dropout, Activation, SpatialDropout2D
 from keras.layers import Activation, Dropout, Flatten, Dense, Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD
-
+from keras.callbacks import CSVLogger
 from scipy.misc import imread, imresize
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
@@ -36,10 +36,11 @@ def csv_to_data(csv_path, img_path, target_shape):
 
     return (X, y)
 
+def get_filename():
+    filename = 'SC2_regr_' + str(time())
+    return filename
 
-def save_model(model, path):
-    now = str(time())
-    filename = 'SC2_regr_' + now
+def save_model(model, path, filename):
     model.save(path + 'models/interestingness/' + filename + '.h5')
     # from keras.utils.visualize_util import plot
     # plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
@@ -54,16 +55,11 @@ def get_model(img_channels, img_width, img_height, path=None):
                             input_shape=(img_channels, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.25))
+    model.add(SpatialDropout2D(0.5))
 
     model.add(Convolution2D(96, 5, 5, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.25))
-
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(0.5))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
@@ -71,12 +67,17 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(0.5))
 
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(0.5))
 
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(SpatialDropout2D(0.5))
+
+    model.add(Convolution2D(512, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(0.5))
@@ -123,7 +124,7 @@ def main(args):
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    nb_epoch = 80
+    nb_epoch = 100
     batch_size = 64
 
     model = get_model(img_channels, img_width, img_height)
@@ -131,17 +132,21 @@ def main(args):
                   optimizer='rmsprop') # SGD(lr=0.001, momentum=0.9))
     print('model compiled')
     print('fitting model')
-    model.fit(X_train, y_train, nb_epoch=nb_epoch,
+
+    filename = get_filename()
+    csv_logger = CSVLogger(data_path + 'logs/' + filename + '.log')
+
+    model.fit(X_train, y_train, nb_epoch=nb_epoch, callbacks=[csv_logger], 
               batch_size=batch_size, validation_data=(X_test, y_test))
 
-    save_model(model, data_path)
+    save_model(model, data_path, filename)
 
     y_pred = model.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
     print('mean squared error {}'.format(mse))
 
-    #from NotificationSender import NotificationSender
-    #NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
+    from NotificationSender import NotificationSender
+    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
 
 if __name__ == "__main__":
     main(sys.argv)
