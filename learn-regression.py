@@ -17,13 +17,11 @@ from keras.layers.core import Dense, Dropout, Activation
 from keras.layers import Activation, Dropout, Flatten, Dense, Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.layers.normalization import BatchNormalization
 from keras.optimizers import SGD
-# from keras.utils.visualize_util import plot
 
 from scipy.misc import imread, imresize
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 from NotificationSender import NotificationSender
-
 
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
@@ -44,6 +42,7 @@ def save_model(model, path):
     now = str(time())
     filename = 'SC2_regr_' + now
     model.save(path + 'models/interestingness/' + filename + '.h5')
+    # from keras.utils.visualize_util import plot
     # plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
 
 
@@ -66,34 +65,33 @@ def get_model(img_channels, img_width, img_height, path=None):
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+    model.add(Dropout(0.5))
 
     model.add(Flatten())
     model.add(Dense(512))
     model.add(Activation('relu'))
-    model.add(Dropout(0.8))
+    model.add(Dropout(0.5))
     model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     model.add(Dense(1))
     model.add(Activation('linear'))
-    print('model loaded')
 
     return model
 
@@ -106,7 +104,7 @@ def main(args):
     regression_range = list(range(0, 5))
 
     if(len(args) != 3):
-        print('give storage folder (containing "data/img/" and "models/" folders) and csv regression file pls')
+        print('give storage folder (containing "data/ingame/" and "models/" folders) and csv regression file pls')
         return -1
 
     data_path = args[1]
@@ -114,7 +112,7 @@ def main(args):
         print('data path is wrooong')
         return -1
 
-    img_path = data_path + 'data/img/ingame/'
+    img_path = data_path + 'data/ingame/'
     if(not path_is_dir(img_path)):
         print('img path is wrooong')
         return -1
@@ -126,13 +124,13 @@ def main(args):
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    nb_epoch = 100
-    batch_size = 32
+    nb_epoch = 80
+    batch_size = 64
 
     model = get_model(img_channels, img_width, img_height)
     model.compile(loss='mean_squared_error',
-                  optimizer=SGD(lr=0.1, momentum=0.9))
-
+                  optimizer='rmsprop') # SGD(lr=0.001, momentum=0.9))
+    print('model compiled')
     print('fitting model')
     model.fit(X_train, y_train, nb_epoch=nb_epoch,
               batch_size=batch_size, validation_data=(X_test, y_test))
