@@ -130,11 +130,11 @@ def main(args):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
     nb_epoch = 100
-    batch_size = 64
+    batch_size = 128
 
     model = get_model(img_channels, img_width, img_height)
     model.compile(loss='mean_squared_error',
-                  optimizer=SGD(lr=0.001, momentum=0.9)) # 'rmsprop' 
+                  optimizer='rmsprop') #SGD(lr=0.001, momentum=0.9))
     print('model compiled')
     print('fitting model')
 
