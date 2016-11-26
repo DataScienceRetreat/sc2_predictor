@@ -40,6 +40,10 @@ def get_filename():
     filename = 'SC2_regr_' + str(time())
     return filename
 
+def save_config(path, filename):
+    cmd = "cp learn-regression.py {}_config.txt".format(path + filename)
+    os.system(cmd)
+
 def save_model(model, path, filename):
     model.save(path + 'models/interestingness/' + filename + '.h5')
     # from keras.utils.visualize_util import plot
@@ -118,6 +122,7 @@ def main(args):
         return -1
 
     csv_path = args[2]
+    log_path = data_path + 'logs/'
 
     print('loading data from csv')
 
@@ -129,17 +134,18 @@ def main(args):
 
     model = get_model(img_channels, img_width, img_height)
     model.compile(loss='mean_squared_error',
-                  optimizer='rmsprop') # SGD(lr=0.001, momentum=0.9))
+                  optimizer=SGD(lr=0.001, momentum=0.9)) # 'rmsprop' 
     print('model compiled')
     print('fitting model')
 
     filename = get_filename()
-    csv_logger = CSVLogger(data_path + 'logs/' + filename + '.log')
+    csv_logger = CSVLogger(log_path + filename + '.log')
 
     model.fit(X_train, y_train, nb_epoch=nb_epoch, callbacks=[csv_logger], 
               batch_size=batch_size, validation_data=(X_test, y_test))
 
     save_model(model, data_path, filename)
+    save_config(log_path, filename)
 
     y_pred = model.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
