@@ -50,7 +50,7 @@ def save_model(model, path, filename):
     # plot(model, to_file=path + 'models/interestingness/' + filename + '.png')
 
 
-def get_model(img_channels, img_width, img_height, path=None):
+def get_model(img_channels, img_width, img_height, dropout=0.5, path=None):
     print('building neural network')
 
     model = Sequential()
@@ -59,33 +59,49 @@ def get_model(img_channels, img_width, img_height, path=None):
                             input_shape=(img_channels, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
 
     model.add(Convolution2D(96, 5, 5, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
 
     model.add(Convolution2D(128, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
 
     model.add(Convolution2D(256, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
 
-    model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
 
-    model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(0.5))
+    model.add(SpatialDropout2D(dropout))
  
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(SpatialDropout2D(dropout))
+    
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(SpatialDropout2D(dropout))
+
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(SpatialDropout2D(dropout))
+
+    model.add(Convolution2D(256, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(SpatialDropout2D(dropout))
+
     model.add(Flatten())
     model.add(Dense(256))
     model.add(Activation('relu'))
@@ -129,12 +145,12 @@ def main(args):
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
-    nb_epoch = 100
+    nb_epoch = 80
     batch_size = 128
 
     model = get_model(img_channels, img_width, img_height)
     model.compile(loss='mean_squared_error',
-                  optimizer='rmsprop') #SGD(lr=0.001, momentum=0.9))
+                  optimizer='adam') #'rmsprop') #SGD(lr=0.001, momentum=0.9))
     print('model compiled')
     print('fitting model')
 
@@ -151,8 +167,8 @@ def main(args):
     mse = mean_squared_error(y_test, y_pred)
     print('mean squared error {}'.format(mse))
 
-    from NotificationSender import NotificationSender
-    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
+    # from NotificationSender import NotificationSender
+    # NotificationSender('RegressionLearner').notify('training NN is done 🚀😍')
 
 if __name__ == "__main__":
     main(sys.argv)
