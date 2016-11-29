@@ -69,18 +69,14 @@ def get_model(img_channels, img_width, img_height, dropout=0.5, path=None):
 
     model = Sequential()
 
-    model.add(Convolution2D(48, 7, 7, border_mode='same',
+ 
+    model.add(Convolution2D(96, 7, 7, border_mode='same',
                             input_shape=(img_channels, img_width, img_height)))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(dropout))
 
-    model.add(Convolution2D(96, 5, 5, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(dropout))
-
-    model.add(Convolution2D(128, 3, 3, border_mode='same'))
+    model.add(Convolution2D(128, 5, 5, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(dropout))
@@ -90,15 +86,15 @@ def get_model(img_channels, img_width, img_height, dropout=0.5, path=None):
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(dropout))
 
-    model.add(Convolution2D(512, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(dropout))
+    # model.add(Convolution2D(512, 3, 3, border_mode='same'))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.add(SpatialDropout2D(dropout))
 
-    model.add(Convolution2D(1024, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(SpatialDropout2D(dropout))
+    # model.add(Convolution2D(1024, 3, 3, border_mode='same'))
+    # model.add(Activation('relu'))
+    # model.add(MaxPooling2D(pool_size=(2, 2)))
+    # model.add(SpatialDropout2D(dropout))
  
     model.add(Flatten())
     model.add(Dense(512))
@@ -150,8 +146,12 @@ def main(args):
     nb_epoch = 80
     batch_size = 128
 
+    filename = get_filename()
+    csv_logger = CSVLogger(log_path + filename + '.log')
+
     if model_path:
         print('loading model from {}'.format(model_path))
+        model = get_model(img_channels, img_width, img_height)
         model = load_model(model_path)
         copy_config(log_path, model_path, filename)
     else:
@@ -163,9 +163,6 @@ def main(args):
 
     print('model compiled')
     print('fitting model')
-
-    filename = get_filename()
-    csv_logger = CSVLogger(log_path + filename + '.log')
 
     model.fit(X_train, y_train, nb_epoch=nb_epoch, callbacks=[csv_logger], 
               batch_size=batch_size, validation_data=(X_test, y_test))
