@@ -139,7 +139,7 @@ def main(args):
         model_path = args[3]
 
     print('loading data from csv')
-
+    # TODO: check csv for filename, interestingness in header
     X, y = csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 

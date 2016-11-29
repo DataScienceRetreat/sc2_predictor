@@ -37,8 +37,7 @@ def csv_to_data(csv_path, img_path, target_shape):
     y = np.array([row['class'] for index, row in df.iterrows()
         if os.path.isfile(img_path + row['filename'] + '.png')])
 
-    print('loaded from {} at {}'.format(csv_path, img_path))
-    print(X.shape)
+    print('{} loaded from {} at {}'.format(X.shape[0], csv_path, img_path))
     return (X, y)
 
 
@@ -139,9 +138,14 @@ def main(args):
     nb_epoch = 80
     batch_size = 32
     
+    # TODO: check for filename, class in header of csv 
+    print('load ingame images')
     X_ingame, y_ingame = csv_to_data(csv_path, data_path + 'ingame/', (img_width, img_height))
+    print('load misc images')
     X_misc, y_misc = csv_to_data(csv_path, data_path + 'misc/', (img_width, img_height))
     
+    assert X_ingame.shape[0] != 0
+
     X = np.append(X_ingame, X_misc, axis=0)
     y = np.append(y_ingame, y_misc, axis=0)
 
