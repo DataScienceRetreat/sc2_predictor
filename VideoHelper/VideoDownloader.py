@@ -22,7 +22,8 @@ class VideoDownloader:
 		if(len(self.url) < 5):
 			print('NO URL GIVEN =/ TELL ME WHAT DO DOWNLOAD PLS')
 			return -1
-
+		
+		#bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s#%(title)s.%(ext)s {url}""".format(
 		bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s.%(ext)s {url}""".format(
 			url=self.url,
 			dest=self.dest)
