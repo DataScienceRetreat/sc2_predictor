@@ -12,8 +12,10 @@ class VideoDownloader:
 		self.url = url
 		self.dest = dest
 
-	def download(self):
-		# print('starting download {}'.format(self.url))
+	def download(self, verbose=False):
+		if verbose:
+			print('starting download {}'.format(self.url))
+		
 		print('.', end="")
 		sys.stdout.flush()
 		
@@ -21,17 +23,15 @@ class VideoDownloader:
 			print('NO URL GIVEN =/ TELL ME WHAT DO DOWNLOAD PLS')
 			return -1
 
-		video_format = "mp4"
-		# force format with --recode-video {video_format}
-
-		bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s#%(title)s.%(ext)s {url}""".format(
+		bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s.%(ext)s {url}""".format(
 			url=self.url,
 			dest=self.dest)
 
 		process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
 		self.output, self.error = process.communicate()
-		
-		# print('done with download')
+
+		if verbose:
+			print('done with download')
 
 		if(not self.error):
 			return 0

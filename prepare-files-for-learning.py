@@ -10,7 +10,6 @@ import random
 
 from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir
 
-
 def setup_folders(class_names, path='data/', noTestnoValid=False):
     train_path = path + 'train/'
     test_path = path + 'test/'

@@ -8,3 +8,4 @@ models/vgg16/vgg16_weights.h5
 models/interestingness/*
 .idea*
 logs/
+src/
