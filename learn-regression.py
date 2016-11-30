@@ -71,6 +71,7 @@ def VGG16(input_shape=None, model_path='models'):
     """
     # Determine proper input shape
     TH_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_th_dim_ordering_th_kernels_notop.h5'
+    TF_WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
 
     model = Sequential()
 
@@ -101,45 +102,29 @@ def VGG16(input_shape=None, model_path='models'):
               border_mode='same', name='block4_conv3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool'))
 
-    # model.add(Convolution2D(512, 3, 3, activation='relu',
-    #           border_mode='same', name='block5_conv1'))
-    # model.add(Convolution2D(512, 3, 3, activation='relu',
-    #           border_mode='same', name='block5_conv2'))
-    # model.add(Convolution2D(512, 3, 3, activation='relu',
-    #           border_mode='same', name='block5_conv3'))
-    # model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool'))
+    model.add(Convolution2D(512, 3, 3, activation='relu',
+              border_mode='same', name='block5_conv1'))
+    model.add(Convolution2D(512, 3, 3, activation='relu',
+              border_mode='same', name='block5_conv2'))
+    model.add(Convolution2D(512, 3, 3, activation='relu',
+              border_mode='same', name='block5_conv3'))
+    model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool'))
 
     if K.image_dim_ordering() == 'th':
         weights_path=get_file('vgg16_weights_th_dim_ordering_th_kernels_notop.h5',
                                 TH_WEIGHTS_PATH_NO_TOP,
                                 cache_subdir=model_path)
 
-        # model.load_weights(weights_path)
+        model.load_weights(weights_path)
+    else:
+        weights_path = get_file('vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5',
+                                TF_WEIGHTS_PATH_NO_TOP,
+                                cache_subdir=model_path)
+        model.load_weights(weights_path)
 
-        f = h5py.File(weights_path)
-        for k in range(f.attrs['nb_layers']):
-            if k >= len(model.layers):
-                break
-            g = f['layer_{}'.format(k)]
-            weights = [g['param_{}'.format(p)] for p in range(g.attrs['nb_params'])]
-            model.layers[k].set_weights(weights)
-        f.close()
-        
-        # f = h5py.File(weights_path)
-        # for k in range(f.attrs['nb_layers']):
-        #     if k >= len(model.layers) - 1:
-        #         # we don't look at the last two layers in the savefile (fully-connected and activation)
-        #         break
-        #     g = f['layer_{}'.format(k)]
-        #     weights = [g['param_{}'.format(p)] for p in range(g.attrs['nb_params'])]
-        #     layer = model.layers[k]
+        if K.backend() == 'theano':
+            convert_all_kernels_in_model(model)
 
-        #     if layer.__class__.__name__ in ['Convolution1D', 'Convolution2D', 'Convolution3D', 'AtrousConvolution2D']:
-        #         weights[0] = np.transpose(weights[0], (2, 3, 1, 0))
-
-        #     layer.set_weights(weights)
-
-f.close()
         print('model loaded')
 
         if K.backend() == 'tensorflow':
@@ -152,6 +137,14 @@ f.close()
                           'your Keras config '
                           'at ~/.keras/keras.json.')
             convert_all_kernels_in_model(model)
+
+    print('before pop')
+    print(len(model.layers))
+    model.pop()
+    model.pop()
+    model.pop()
+    model.pop()
+    print(len(model.layers)) 
 
     for layer in model.layers[:25]:
         layer.trainable=False
@@ -184,12 +177,12 @@ def get_model(shape, dropout=0.5, path=None):
     # model.add(MaxPooling2D(pool_size=(2, 2)))
     # model.add(SpatialDropout2D(dropout))
 
-    # model.add(Convolution2D(1024, 3, 3, border_mode='same'))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(SpatialDropout2D(dropout))
+    model.add(Convolution2D(1024, 3, 3, border_mode='same', input_shape=shape))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(SpatialDropout2D(dropout))
 
-    model.add(Flatten(input_shape=shape))
+    model.add(Flatten())#input_shape=shape))
     model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
@@ -258,7 +251,6 @@ def main(args):
 
     filename=get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
-
     model_logger = ModelCheckpoint(base_path + 'models/interestingness/' + filename + '.h5', 
         save_best_only=True, save_weights_only=False, mode='auto')
 
@@ -275,11 +267,6 @@ def main(args):
 
     model.compile(loss='mean_squared_error',
           optimizer=SGD(lr=0.1, momentum=0.9))#'adam') #'rmsprop') #
-
-    print('trainable layers')
-    for layer in model.layers:
-        if layer.trainable:
-            print(layer.name)
 
     print('model compiled')
     # print('fitting model')

@@ -184,18 +184,18 @@ def main(args):
 
     #    save_model(model, model_path, filename)
 
+    from Helper.NotificationSender import NotificationSender
+    NotificationSender('IngameClassifier').notify('training NN is done 🚀😍')
+
     img_internet = load_photo_from_url(r"http://asset-9.soupcdn.com/asset/16161/1072_950a_649.png", (img_width, img_height))
-    array_to_img(img_internet[0])
+    # array_to_img(img_internet[0])
 
     tst_img_path = data_path + 'ingame/' + '0M3rGNWZTlk#_00001.png'
     img = load_img_from_file(tst_img_path, (img_width, img_height))
-    #array_to_img(img[0])
+    # array_to_img(img[0])
 
     print('{} should be 0'.format(model.predict(img)))
     print('{} should be 1'.format(model.predict(img_internet)))
-
-    from Helper.NotificationSender import NotificationSender
-    NotificationSender('IngameClassifier').notify('training NN is done 🚀😍')
 
 if __name__ == "__main__":
     main(sys.argv)
