@@ -20,7 +20,7 @@ from keras.optimizers import SGD
 from keras.callbacks import CSVLogger
 from keras.models import load_model
 
-from VideoHelper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix
+from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix
 
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
@@ -173,8 +173,8 @@ def main(args):
     mse = mean_squared_error(y_test, y_pred)
     print('mean squared error {}'.format(mse))
 
-    from NotificationSender import NotificationSender
-    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍\n mse: {}'.format(mse))
+    from Helper.NotificationSender import NotificationSender
+    NotificationSender('RegressionLearner').notify('training NN is done 🚀😍\nmse: {}'.format(mse))
 
 if __name__ == "__main__":
     main(sys.argv)

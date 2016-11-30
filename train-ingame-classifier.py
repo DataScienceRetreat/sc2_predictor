@@ -22,7 +22,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 
 from sklearn.model_selection import train_test_split
 
-from VideoHelper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix
+from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix
 
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
 # os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
@@ -117,11 +117,13 @@ def get_model(img_channels, img_width, img_height, dropout=0.5):
 def main(args):
 
     if(len(args) < 3):
-        print('give storage folder (containing "/ingame" and "/misc" folders) and csv classification file pls')
+        print('give storage folder (containing "data/ingame", "data/misc", "models/" and "logs/" folders) and csv classification file pls')
         return -1
 
-    data_path = args[1]
-    
+    file_path = args[1]
+    data_path = file_path + "data/"
+    model_path = file_path + "model/"
+
     if(not path_is_dir(data_path)):
         print('data path is wrooong')
         return -1
@@ -168,7 +170,6 @@ def main(args):
                   metrics=['accuracy'])
 
     train_datagen = ImageDataGenerator(
-            rescale=1./255,
             shear_range=0.2,
             zoom_range=0.2,
             horizontal_flip=True,
@@ -177,7 +178,7 @@ def main(args):
 
     train_datagen.fit(X_train)
 
-    test_datagen = ImageDataGenerator(rescale=1./255)
+    test_datagen = ImageDataGenerator()
     test_datagen.fit(X_test)
 
     model.fit_generator(
@@ -188,7 +189,7 @@ def main(args):
         nb_val_samples=nb_validation_samples)
 
     filename = get_filename()
-    save_model(model, data_path, filename)
+    save_model(model, model_path, filename)
 
     img_internet = load_photo_from_url(r"http://asset-9.soupcdn.com/asset/16161/1072_950a_649.png", (img_width, img_height))
     array_to_img(img_internet[0])
@@ -197,8 +198,11 @@ def main(args):
     img = load_img_from_file(tst_img_path, (img_width, img_height))
     array_to_img(img[0])
 
-    print(model.predict(img)) # should be 0
-    print(model.predict(img_internet)) # should be 1
+    print('{} should be 0'.format(model.predict(img)))
+    print('{} should be 1'.format(model.predict(img_internet)))
+
+    from Helper.NotificationSender import NotificationSender
+    NotificationSender('IngameClassifier').notify('training NN is done 🚀😍')
 
 if __name__ == "__main__":
     main(sys.argv)

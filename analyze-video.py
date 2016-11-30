@@ -4,9 +4,9 @@ import sys
 import numpy as np
 import pandas as pd
 
-from VideoHelper.HelperFunctions import get_files_in_dir, path_is_dir, files_to_matrix
-from VideoHelper.VideoDownloader import VideoDownloader
-from VideoHelper.Video2Images import Video2Images
+from Helper.HelperFunctions import get_files_in_dir, path_is_dir, files_to_matrix
+from Helper.VideoDownloader import VideoDownloader
+from Helper.Video2Images import Video2Images
 
 from keras.models import load_model
 
