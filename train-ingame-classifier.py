@@ -184,8 +184,8 @@ def main(args):
 
     filename = get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
-    model_logger = ModelCheckpoint(data_path + 'models/interestingness/' + filename + '.h5', 
-        monitor='mean_squared_error', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+    model_logger = ModelCheckpoint(data_path + 'models/ingame-classifier/' + filename + '.h5', 
+        save_best_only=True, save_weights_only=False, mode='auto')
 
     model.fit_generator(
         train_datagen.flow(X_train, y_train, batch_size=batch_size),
@@ -200,9 +200,9 @@ def main(args):
     img_internet = load_photo_from_url(r"http://asset-9.soupcdn.com/asset/16161/1072_950a_649.png", (img_width, img_height))
     array_to_img(img_internet[0])
 
-    tst_img_path = img_path + '0M3rGNWZTlk#_00001.png'
+    tst_img_path = data_path + 'ingame/' + '0M3rGNWZTlk#_00001.png'
     img = load_img_from_file(tst_img_path, (img_width, img_height))
-    array_to_img(img[0])
+    #array_to_img(img[0])
 
     print('{} should be 0'.format(model.predict(img)))
     print('{} should be 1'.format(model.predict(img_internet)))
