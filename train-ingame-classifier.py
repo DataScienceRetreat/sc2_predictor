@@ -23,23 +23,10 @@ from keras.callbacks import CSVLogger, ModelCheckpoint
 
 from sklearn.model_selection import train_test_split
 
-from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix
+from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix, csv_to_data
 
 os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=gpu,floatX=float32"
 # os.environ["THEANO_FLAGS"] = "mode=FAST_RUN,device=cpu,floatX=float32"
-
-
-def csv_to_data(csv_path, img_path, target_shape):
-    df = pd.read_csv(csv_path)
-
-    X = files_to_matrix(df, img_path, target_shape)
-
-    X /= 255.
-    y = np.array([row['class'] for index, row in df.iterrows()
-        if os.path.isfile(img_path + row['filename'] + '.png')])
-
-    print('{} loaded from {} at {}'.format(X.shape[0], csv_path, img_path))
-    return (X, y)
 
 
 def get_filename():
@@ -121,16 +108,16 @@ def main(args):
         print('give storage folder (containing "data/ingame", "data/misc", "models/" and "logs/" folders) and csv classification file pls')
         return -1
 
-    file_path = args[1]
-    data_path = file_path + "data/"
-    model_path = file_path + "model/"
+    base_path = args[1]
+    data_path = base_path + "data/"
+    model_path = base_path + "models/"
 
     if(not path_is_dir(data_path)):
         print('data path is wrooong')
         return -1
 
     csv_path = args[2]
-    log_path = data_path + 'logs/'
+    log_path = base_path + 'logs/'
 
     img_channels = 3
     img_width = 160
@@ -143,9 +130,9 @@ def main(args):
     
     # TODO: check for filename, class in header of csv 
     print('load ingame images')
-    X_ingame, y_ingame = csv_to_data(csv_path, data_path + 'ingame/', (img_width, img_height))
+    X_ingame, y_ingame = csv_to_data(csv_path, data_path + 'ingame/', 'class', (img_width, img_height), limit=100)
     print('load misc images')
-    X_misc, y_misc = csv_to_data(csv_path, data_path + 'misc/', (img_width, img_height))
+    X_misc, y_misc = csv_to_data(csv_path, data_path + 'misc/', 'class', (img_width, img_height), limit=100)
     
     assert X_ingame.shape[0] != 0
 
@@ -184,7 +171,7 @@ def main(args):
 
     filename = get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
-    model_logger = ModelCheckpoint(data_path + 'models/ingame-classifier/' + filename + '.h5', 
+    model_logger = ModelCheckpoint(model_path + 'ingame-classifier/' + filename + '.h5', 
         save_best_only=True, save_weights_only=False, mode='auto')
 
     model.fit_generator(

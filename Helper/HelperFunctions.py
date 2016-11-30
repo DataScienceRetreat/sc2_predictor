@@ -83,3 +83,22 @@ def _obtain_input_shape(input_shape, default_size, min_size, dim_ordering):
         else:
             input_shape = (None, None, 3)
     return input_shape
+
+def csv_to_data(csv_path, img_path, column, target_shape, limit=None):
+    df = pd.read_csv(csv_path)
+
+    # TODO: check csv for "filename", column in header
+
+    X = files_to_matrix(df, img_path, target_shape)
+
+    X /= 255.
+
+    if limit:
+        y = np.array([row[column] for index, row in df.iloc[:limit].iterrows()
+            if isfile(img_path + row['filename'] + '.png')])
+    else:
+        y = np.array([row[column] for index, row in df.iterrows()
+            if isfile(img_path + row['filename'] + '.png')])
+
+    print('{} loaded from {} at {}'.format(X.shape[0], csv_path, img_path))
+    return (X, y)

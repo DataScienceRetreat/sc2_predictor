@@ -27,21 +27,7 @@ from keras.utils.data_utils import get_file
 from keras.utils.layer_utils import convert_all_kernels_in_model
 import keras.backend as K
 
-from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix, _obtain_input_shape
-
-def csv_to_data(csv_path, img_path, target_shape):
-    df = pd.read_csv(csv_path)
-
-    X = files_to_matrix(df, img_path, target_shape)
-
-    X /= 255.
-    y = np.array([row['interestingness'] for index, row in df.iterrows()
-        if os.path.isfile(img_path + row['filename'] + '.png')])
-    # y = df.iloc[:, 1]
-    print('X shape {}'.format(X.shape))
-
-    return (X, y)
-
+from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix, _obtain_input_shape, csv_to_data
 
 def get_filename():
     filename = 'SC2_regr_' + str(int(time()))
@@ -128,17 +114,32 @@ def VGG16(input_shape=None, model_path='models'):
                                 TH_WEIGHTS_PATH_NO_TOP,
                                 cache_subdir=model_path)
 
-        model.load_weights(weights_path)
+        # model.load_weights(weights_path)
 
+        f = h5py.File(weights_path)
+        for k in range(f.attrs['nb_layers']):
+            if k >= len(model.layers):
+                break
+            g = f['layer_{}'.format(k)]
+            weights = [g['param_{}'.format(p)] for p in range(g.attrs['nb_params'])]
+            model.layers[k].set_weights(weights)
+        f.close()
+        
         # f = h5py.File(weights_path)
         # for k in range(f.attrs['nb_layers']):
-        #     if k >= len(model.layers):
+        #     if k >= len(model.layers) - 1:
+        #         # we don't look at the last two layers in the savefile (fully-connected and activation)
         #         break
         #     g = f['layer_{}'.format(k)]
         #     weights = [g['param_{}'.format(p)] for p in range(g.attrs['nb_params'])]
-        #     model.layers[k].set_weights(weights)
-        # f.close()
+        #     layer = model.layers[k]
 
+        #     if layer.__class__.__name__ in ['Convolution1D', 'Convolution2D', 'Convolution3D', 'AtrousConvolution2D']:
+        #         weights[0] = np.transpose(weights[0], (2, 3, 1, 0))
+
+        #     layer.set_weights(weights)
+
+f.close()
         print('model loaded')
 
         if K.backend() == 'tensorflow':
@@ -213,26 +214,25 @@ def main(args):
         print('give storage folder (containing "data/ingame/" and "models/" folders) and csv regression file pls')
         return -1
 
-    data_path=args[1]
-    if(not path_is_dir(data_path)):
+    base_path=args[1]
+    if(not path_is_dir(base_path)):
         print('data path is wrooong')
         return -1
 
-    img_path=data_path + 'data/ingame/'
+    img_path=base_path + 'data/ingame/'
     if(not path_is_dir(img_path)):
         print('img path is wrooong')
         return -1
 
     csv_path=args[2]
-    log_path=data_path + 'logs/'
+    log_path=base_path + 'logs/'
 
     model_path=''
     if(len(args) > 3):
         model_path=args[3]
 
     print('loading data from csv')
-    # TODO: check csv for "filename", "interestingness" in header
-    X, y=csv_to_data(csv_path, img_path, (img_width, img_height))
+    X, y=csv_to_data(csv_path, img_path, 'interestingness', (img_width, img_height))
     X_train, X_test, y_train, y_test=train_test_split(X, y, test_size=0.3)
 
     nb_epoch=120
@@ -259,7 +259,7 @@ def main(args):
     filename=get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
 
-    model_logger = ModelCheckpoint(data_path + 'models/interestingness/' + filename + '.h5', 
+    model_logger = ModelCheckpoint(base_path + 'models/interestingness/' + filename + '.h5', 
         save_best_only=True, save_weights_only=False, mode='auto')
 
     if model_path:
@@ -268,7 +268,7 @@ def main(args):
         top_model=load_model(model_path)
         copy_config(log_path, model_path, filename)
     else:
-        model=VGG16(input_shape=img_shape, model_path=data_path + 'models/')
+        model=VGG16(input_shape=img_shape, model_path=base_path + 'models/')
         top_model=get_model(shape=model.output_shape[1:])
         model.add(top_model)
         save_config(log_path, filename)
@@ -295,7 +295,7 @@ def main(args):
         nb_val_samples=nb_validation_samples,
         callbacks=[csv_logger, model_logger])
 
-    # save_model(model, data_path, filename)
+    # save_model(model, base_path, filename)
 
     y_pred=model.predict(X_test)
     mse=mean_squared_error(y_test, y_pred)
