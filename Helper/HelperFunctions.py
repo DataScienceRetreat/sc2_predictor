@@ -4,7 +4,7 @@ from scipy.misc import imread, imresize
 
 import numpy as np
 import pandas as pd
-
+import warnings
 
 def path_is_file(path):
     return isfile(path)

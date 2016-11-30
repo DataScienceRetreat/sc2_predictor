@@ -19,6 +19,7 @@ from keras.utils import np_utils
 
 from keras.layers import Activation, Dropout, Flatten, Dense, Convolution2D, MaxPooling2D, ZeroPadding2D
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
+from keras.callbacks import CSVLogger, ModelCheckpoint
 
 from sklearn.model_selection import train_test_split
 
@@ -137,8 +138,8 @@ def main(args):
 
     class_names = ['ingame', 'misc']
 
-    nb_epoch = 80
-    batch_size = 32
+    nb_epoch = 40
+    batch_size = 16
     
     # TODO: check for filename, class in header of csv 
     print('load ingame images')
@@ -181,15 +182,20 @@ def main(args):
     test_datagen = ImageDataGenerator()
     test_datagen.fit(X_test)
 
+    filename = get_filename()
+    csv_logger=CSVLogger(log_path + filename + '.log')
+    model_logger = ModelCheckpoint(data_path + 'models/interestingness/' + filename + '.h5', 
+        monitor='mean_squared_error', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+
     model.fit_generator(
         train_datagen.flow(X_train, y_train, batch_size=batch_size),
         samples_per_epoch=nb_train_samples,
         nb_epoch=nb_epoch,
         validation_data=train_datagen.flow(X_test, y_test),
-        nb_val_samples=nb_validation_samples)
+        nb_val_samples=nb_validation_samples,
+        callbacks=[csv_logger, model_logger])
 
-    filename = get_filename()
-    save_model(model, model_path, filename)
+    #    save_model(model, model_path, filename)
 
     img_internet = load_photo_from_url(r"http://asset-9.soupcdn.com/asset/16161/1072_950a_649.png", (img_width, img_height))
     array_to_img(img_internet[0])

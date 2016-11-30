@@ -8,6 +8,8 @@ import pandas as pd
 
 from time import time
 
+import warnings
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
@@ -22,9 +24,10 @@ from keras.optimizers import SGD
 from keras.callbacks import CSVLogger, ModelCheckpoint
 from keras.models import load_model
 from keras.utils.data_utils import get_file
-from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix, _obtain_input_shape
+from keras.utils.layer_utils import convert_all_kernels_in_model
 import keras.backend as K
 
+from Helper.HelperFunctions import path_is_file, get_files_in_dir, path_is_dir, files_to_matrix, _obtain_input_shape
 
 def csv_to_data(csv_path, img_path, target_shape):
     df = pd.read_csv(csv_path)
@@ -112,13 +115,13 @@ def VGG16(input_shape=None, model_path='models'):
               border_mode='same', name='block4_conv3'))
     model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool'))
 
-    model.add(Convolution2D(512, 3, 3, activation='relu',
-              border_mode='same', name='block5_conv1'))
-    model.add(Convolution2D(512, 3, 3, activation='relu',
-              border_mode='same', name='block5_conv2'))
-    model.add(Convolution2D(512, 3, 3, activation='relu',
-              border_mode='same', name='block5_conv3'))
-    model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool'))
+    # model.add(Convolution2D(512, 3, 3, activation='relu',
+    #           border_mode='same', name='block5_conv1'))
+    # model.add(Convolution2D(512, 3, 3, activation='relu',
+    #           border_mode='same', name='block5_conv2'))
+    # model.add(Convolution2D(512, 3, 3, activation='relu',
+    #           border_mode='same', name='block5_conv3'))
+    # model.add(MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool'))
 
     if K.image_dim_ordering() == 'th':
         weights_path=get_file('vgg16_weights_th_dim_ordering_th_kernels_notop.h5',
@@ -232,8 +235,8 @@ def main(args):
     X, y=csv_to_data(csv_path, img_path, (img_width, img_height))
     X_train, X_test, y_train, y_test=train_test_split(X, y, test_size=0.3)
 
-    nb_epoch=80
-    batch_size=128
+    nb_epoch=120
+    batch_size=32
 
     nb_train_samples=X_train.shape[0]
     nb_validation_samples=X_test.shape[0]
@@ -257,7 +260,7 @@ def main(args):
     csv_logger=CSVLogger(log_path + filename + '.log')
 
     model_logger = ModelCheckpoint(data_path + 'models/interestingness/' + filename + '.h5', 
-        monitor='mean_squared_error', verbose=0, save_best_only=True, save_weights_only=False, mode='auto')
+        save_best_only=True, save_weights_only=False, mode='auto')
 
     if model_path:
         print('loading model from {}'.format(model_path))
@@ -271,12 +274,12 @@ def main(args):
         save_config(log_path, filename)
 
     model.compile(loss='mean_squared_error',
-          optimizer='adam') #'rmsprop') #SGD(lr=0.001, momentum=0.9))
+          optimizer=SGD(lr=0.1, momentum=0.9))#'adam') #'rmsprop') #
 
     print('trainable layers')
     for layer in model.layers:
         if layer.trainable:
-            print(layer)
+            print(layer.name)
 
     print('model compiled')
     # print('fitting model')
@@ -290,7 +293,7 @@ def main(args):
         nb_epoch=nb_epoch,
         validation_data=train_datagen.flow(X_test, y_test),
         nb_val_samples=nb_validation_samples,
-        callbacks=[csv_logger])
+        callbacks=[csv_logger, model_logger])
 
     # save_model(model, data_path, filename)
 
