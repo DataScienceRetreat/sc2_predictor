@@ -161,7 +161,9 @@ def main(args):
             shear_range=0.2,
             zoom_range=0.2,
             horizontal_flip=True,
-            fill_mode='nearest'
+            fill_mode='nearest',
+            rotation_range=45.,
+            vertical_flip=True,
     )
 
     train_datagen.fit(X_train)
@@ -172,7 +174,7 @@ def main(args):
     filename = get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
     model_logger = ModelCheckpoint(model_path + 'ingame-classifier/' + filename + '.h5', 
-        save_best_only=True, save_weights_only=False, mode='auto')
+        save_best_only=True, save_weights_only=False, verbose=True, mode='auto')
 
     model.fit_generator(
         train_datagen.flow(X_train, y_train, batch_size=batch_size),

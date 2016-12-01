@@ -241,7 +241,8 @@ def main(args):
             shear_range=0.2,
             zoom_range=0.2,
             horizontal_flip=True,
-            fill_mode='nearest'
+            fill_mode='nearest',
+            rotation_range=10.,
     )
 
     train_datagen.fit(X_train)
@@ -252,7 +253,7 @@ def main(args):
     filename=get_filename()
     csv_logger=CSVLogger(log_path + filename + '.log')
     model_logger = ModelCheckpoint(base_path + 'models/interestingness/' + filename + '.h5', 
-        save_best_only=True, save_weights_only=False, mode='auto')
+        save_best_only=True, save_weights_only=False, verbose=True, mode='auto')
 
     if model_path:
         print('loading model from {}'.format(model_path))
@@ -278,7 +279,7 @@ def main(args):
         train_datagen.flow(X_train, y_train, batch_size=batch_size),
         samples_per_epoch=nb_train_samples,
         nb_epoch=nb_epoch,
-        validation_data=train_datagen.flow(X_test, y_test),
+        validation_data=test_datagen.flow(X_test, y_test),
         nb_val_samples=nb_validation_samples,
         callbacks=[csv_logger, model_logger])
 
