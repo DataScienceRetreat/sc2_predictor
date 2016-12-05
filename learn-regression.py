@@ -138,13 +138,15 @@ def VGG16(input_shape=None, model_path='models'):
                           'at ~/.keras/keras.json.')
             convert_all_kernels_in_model(model)
 
-    print('before pop')
-    print(len(model.layers))
+    print('before pop'.format(len(model.layers)))
     model.pop()
     model.pop()
     model.pop()
     model.pop()
-    print(len(model.layers)) 
+    model.pop()
+    model.pop()
+    model.pop()
+    print('after pop'.format(len(model.layers)))
 
     for layer in model.layers[:25]:
         layer.trainable=False
@@ -155,43 +157,24 @@ def get_model(shape, dropout=0.5, path=None):
     print('building neural network')
 
     model=Sequential()
-
-    # model.add(Convolution2D(96, 7, 7, border_mode='same',
-    #                         input_shape=shape))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(SpatialDropout2D(dropout))
-
-    # model.add(Convolution2D(128, 5, 5, border_mode='same'))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(SpatialDropout2D(dropout))
-
-    # model.add(Convolution2D(256, 3, 3, border_mode='same'))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(SpatialDropout2D(dropout))
-
-    # model.add(Convolution2D(512, 3, 3, border_mode='same'))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(2, 2)))
-    # model.add(SpatialDropout2D(dropout))
-
-    model.add(Convolution2D(1024, 3, 3, border_mode='same', input_shape=shape))
+    
+    model.add(Convolution2D(245, 3, 3, border_mode='same', input_shape=shape))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(245, 3, 3, border_mode='same', input_shape=shape))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(dropout))
 
     model.add(Flatten())#input_shape=shape))
-    model.add(Dense(512))
+    model.add(Dense(4096))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(512))
+    model.add(Dense(2048))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
     model.add(Dense(1))
-    model.add(Activation('linear'))
+    #model.add(Activation('linear'))
 
     return model
 
@@ -257,8 +240,8 @@ def main(args):
 
     if model_path:
         print('loading model from {}'.format(model_path))
-        top_model=get_model(shape=(img_channels, img_width, img_height))
-        top_model=load_model(model_path)
+        #model=get_model(shape=(img_channels, img_width, img_height))
+        model=load_model(model_path)
         copy_config(log_path, model_path, filename)
     else:
         model=VGG16(input_shape=img_shape, model_path=base_path + 'models/')
@@ -267,7 +250,7 @@ def main(args):
         save_config(log_path, filename)
 
     model.compile(loss='mean_squared_error',
-          optimizer=SGD(lr=0.1, momentum=0.9))#'adam') #'rmsprop') #
+          optimizer='adam') # SGD(lr=0.1, momentum=0.9)) #'rmsprop') #
 
     print('model compiled')
     # print('fitting model')

@@ -9,7 +9,6 @@ import warnings
 def path_is_file(path):
     return isfile(path)
 
-
 def get_files_in_dir(dir_path, file_extension=False):
     if file_extension:
         return [f for f in listdir(dir_path) if isfile(join(dir_path, f)) and len(f) > 10]

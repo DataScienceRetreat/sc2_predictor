@@ -38,7 +38,7 @@ def make_thumbnails(img_path, video_path):
 		if f.split('#')[0] in unique_img_ids:
 			continue
 
-		Video2Images(f).create_thumbnails()
+		Video2Images(f, verbose=True).create_thumbnails()
 	
 	print('\ndone with thumbnails')
 

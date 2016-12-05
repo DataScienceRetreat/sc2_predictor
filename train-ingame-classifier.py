@@ -180,7 +180,7 @@ def main(args):
         train_datagen.flow(X_train, y_train, batch_size=batch_size),
         samples_per_epoch=nb_train_samples,
         nb_epoch=nb_epoch,
-        validation_data=train_datagen.flow(X_test, y_test),
+        validation_data=test_datagen.flow(X_test, y_test),
         nb_val_samples=nb_validation_samples,
         callbacks=[csv_logger, model_logger])
 
