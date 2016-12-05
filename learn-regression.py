@@ -21,7 +21,7 @@ from keras.layers import Input, Activation, Dropout, Flatten, Dense, Convolution
 from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator
 from keras.optimizers import SGD
-from keras.callbacks import CSVLogger, ModelCheckpoint
+from keras.callbacks import CSVLogger, ModelCheckpoint, ReduceLROnPlateau
 from keras.models import load_model
 from keras.utils.data_utils import get_file
 from keras.utils.layer_utils import convert_all_kernels_in_model
@@ -138,15 +138,12 @@ def VGG16(input_shape=None, model_path='models'):
                           'at ~/.keras/keras.json.')
             convert_all_kernels_in_model(model)
 
-    print('before pop'.format(len(model.layers)))
+    print('before pop {}'.format(len(model.layers)))
     model.pop()
     model.pop()
     model.pop()
     model.pop()
-    model.pop()
-    model.pop()
-    model.pop()
-    print('after pop'.format(len(model.layers)))
+    print('after pop {}'.format(len(model.layers)))
 
     for layer in model.layers[:25]:
         layer.trainable=False
@@ -157,19 +154,19 @@ def get_model(shape, dropout=0.5, path=None):
     print('building neural network')
 
     model=Sequential()
-    
-    model.add(Convolution2D(245, 3, 3, border_mode='same', input_shape=shape))
+
+    model.add(Convolution2D(512, 3, 3, border_mode='same', input_shape=shape))
     model.add(Activation('relu'))
-    model.add(Convolution2D(245, 3, 3, border_mode='same', input_shape=shape))
+    model.add(Convolution2D(512, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(SpatialDropout2D(dropout))
 
     model.add(Flatten())#input_shape=shape))
-    model.add(Dense(4096))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(2048))
+    # model.add(Dense(4096))
+    # model.add(Activation('relu'))
+    # model.add(Dropout(0.5))
+    model.add(Dense(512))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
@@ -211,8 +208,8 @@ def main(args):
     X, y=csv_to_data(csv_path, img_path, 'interestingness', (img_width, img_height))
     X_train, X_test, y_train, y_test=train_test_split(X, y, test_size=0.3)
 
-    nb_epoch=120
-    batch_size=32
+    nb_epoch=100
+    batch_size=512
 
     nb_train_samples=X_train.shape[0]
     nb_validation_samples=X_test.shape[0]
@@ -221,11 +218,11 @@ def main(args):
     print('nb_validation_samples {}'.format(nb_validation_samples))
 
     train_datagen=ImageDataGenerator(
-            shear_range=0.2,
-            zoom_range=0.2,
-            horizontal_flip=True,
+            #shear_range=0.2,
+            #zoom_range=0.2,
+            vertical_flip=True,
             fill_mode='nearest',
-            rotation_range=10.,
+            #rotation_range=10.,
     )
 
     train_datagen.fit(X_train)
@@ -237,6 +234,7 @@ def main(args):
     csv_logger=CSVLogger(log_path + filename + '.log')
     model_logger = ModelCheckpoint(base_path + 'models/interestingness/' + filename + '.h5', 
         save_best_only=True, save_weights_only=False, verbose=True, mode='auto')
+    reduce_lr = ReduceLROnPlateau(factor=0.2, patience=4, min_lr=0.00001, verbose=True)
 
     if model_path:
         print('loading model from {}'.format(model_path))
@@ -250,7 +248,7 @@ def main(args):
         save_config(log_path, filename)
 
     model.compile(loss='mean_squared_error',
-          optimizer='adam') # SGD(lr=0.1, momentum=0.9)) #'rmsprop') #
+          optimizer=SGD(lr=0.1, momentum=0.9)) #'rmsprop') #
 
     print('model compiled')
     # print('fitting model')
@@ -264,7 +262,7 @@ def main(args):
         nb_epoch=nb_epoch,
         validation_data=test_datagen.flow(X_test, y_test),
         nb_val_samples=nb_validation_samples,
-        callbacks=[csv_logger, model_logger])
+        callbacks=[csv_logger, model_logger, reduce_lr])
 
     # save_model(model, base_path, filename)
 

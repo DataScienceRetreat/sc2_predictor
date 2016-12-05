@@ -47,8 +47,6 @@ def create_filename_df(folder_path, ext='.png'):
 def make_predictions(df, data, model, pred_name, binary=False, decimal_precision=4):
     """predicts with given data and model -> stored in pred_name column
     """
-    print(data.shape)
-
     df[pred_name] = np.zeros(df.shape[0])
 
     for index, row in df.iterrows():
@@ -115,7 +113,7 @@ def video_to_images(video_id, video_path, data_path, ext='mp4', isdir=True):
         return 0
     else:
         Video2Images(video_path, fps=1, source='',
-                     dest=tmp_folder, verbose=True).create_thumbnails()
+                     dest=tmp_folder, verbose=False).create_thumbnails()
 
 
 def load_images(df, folder, shape):
