@@ -2,9 +2,9 @@
 import sys
 import _thread
 
-from VideoHelper.VideoDownloader import VideoDownloader
-from VideoHelper.Video2Images import Video2Images
-from VideoHelper.HelperFunctions import get_files_in_dir, get_unique_ids
+from Helper.VideoDownloader import VideoDownloader
+from Helper.Video2Images import Video2Images
+from Helper.HelperFunctions import get_files_in_dir, get_unique_ids
 
 def download_videos(txt_path, img_path, video_path):
 	unique_video_ids = get_unique_ids(video_path)
@@ -38,7 +38,7 @@ def make_thumbnails(img_path, video_path):
 		if f.split('#')[0] in unique_img_ids:
 			continue
 
-		Video2Images(f, verbose=True).create_thumbnails()
+		Video2Images(f, verbose=False).create_thumbnails()
 	
 	print('\ndone with thumbnails')
 

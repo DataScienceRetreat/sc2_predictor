@@ -29,7 +29,7 @@ class VideoDownloader:
         # bashCommand = """youtube-dl -f bestvideo[height<=?360]
         # --restrict-filenames -o {dest}%(id)s#%(title)s.%(ext)s
         # {url}""".format(
-        bashCommand = """youtube-dl -f bestvideo[height<=?360] --restrict-filenames -o {dest}%(id)s.%(ext)s {url}""".format(
+         bashCommand = 'youtube-dl -f "bestvideo[height<=?480]" --restrict-filenames -o "{dest}%(id)s.%(ext)s {url}"'.format(
             url=self.url,
             dest=self.dest)
 

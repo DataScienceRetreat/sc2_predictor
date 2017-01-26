@@ -9,7 +9,7 @@ class Video2Images:
     needs video file, fps, destination_folder, ?start_time, ?end_time
     '''
 
-    def __init__(self, filename, fps=1, source='data/video/', dest='data/img/', verbose=False):
+    def __init__(self, filename, fps=1/60, source='data/video/', dest='data/img/', verbose=False):
         self.filename = filename
         self.fps = fps
         self.source = source
@@ -21,7 +21,7 @@ class Video2Images:
         bashCommand = """ffmpeg -i {source}{filename} -loglevel panic -vf fps={fps} {dest}{title}#_%05d.png""".format(
             source=self.source,
             filename=self.filename,
-            fps=self.fps/60.,
+            fps=self.fps,
             title=self.title,
             dest=self.dest)
 

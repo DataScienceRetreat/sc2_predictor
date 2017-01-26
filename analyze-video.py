@@ -5,9 +5,9 @@ from time import time
 import numpy as np
 import pandas as pd
 
-from Helper.HelperFunctions import get_files_in_dir, path_is_dir, files_to_matrix, path_is_file
-from Helper.VideoDownloader import VideoDownloader
-from Helper.Video2Images import Video2Images
+from demo.Helper.HelperFunctions import get_files_in_dir, path_is_dir, files_to_matrix, path_is_file
+from demo.Helper.VideoDownloader import VideoDownloader
+from demo.Helper.Video2Images import Video2Images
 
 from keras.models import load_model
 
@@ -17,7 +17,7 @@ from keras.models import load_model
 #  - ingame classifier model
 #  - interestingness regression model
 #  - fps (default=0.5)
-# output: time series with interestingness
+# output: time series with interestingness in csv and json
 
 # steps
 # 1. download video to data/tmp/<file id>/ folder
@@ -72,8 +72,11 @@ def criteria_fullfilled(row, dependencies, criteria):
 
     return True
 
-def setup_folder(data_path, video_id):
-    tmp_folder = data_path + video_id + '/'
+def get_folder_name(path, id, fps):
+    return path + id + '_' + str(fps) + '/'
+
+def setup_folder(data_path, video_id, fps):
+    tmp_folder = get_folder_name(data_path, video_id, fps)
 
     if not os.path.exists(tmp_folder):
         os.makedirs(tmp_folder)
@@ -96,24 +99,25 @@ def make_predictions_with_criteria(df, data, model, pred_name, dependencies=[], 
     return df
 
 
-def download_video(video_id, video_url, data_path, ext='mp4'):
-    tmp_folder = setup_folder(data_path, video_id)
-
+def download_video(video_id, video_url, data_path, fps, ext='mp4', verbose=False):
+    tmp_folder = setup_folder(data_path, video_id, fps)
+    
     filename = video_id + '.' + ext
 
     if not path_is_file(tmp_folder + filename):
-        VideoDownloader(video_url, dest=tmp_folder, verbose=False).download()
+        VideoDownloader(video_url, dest=tmp_folder, verbose=verbose).download()
 
     return tmp_folder + filename
 
-def video_to_images(video_id, video_path, data_path, ext='mp4', isdir=True):
-    tmp_folder = setup_folder(data_path, video_id)
-
-    if isdir and len(get_files_in_dir(tmp_folder)) > 5:
+def video_to_images(video_id, video_path, data_path, fps, ext='mp4', verbose=False):
+    tmp_folder = setup_folder(data_path, video_id, fps)
+    files = [f for f in get_files_in_dir(tmp_folder, file_extension=True) if '.png' in f] 
+    
+    if len(files) > 5:
         return 0
     else:
-        Video2Images(video_path, fps=1, source='',
-                     dest=tmp_folder, verbose=False).create_thumbnails()
+        Video2Images(video_path, fps=fps, source='',
+                     dest=tmp_folder, verbose=verbose).create_thumbnails()
 
 
 def load_images(df, folder, shape):
@@ -122,11 +126,58 @@ def load_images(df, folder, shape):
 
     return X
 
+def analyze(video_location, ingame_model_path, interestingness_model_path, data_path, fps, verbose=False):    
+    img_width = 160
+    img_height = 90
+    img_channels = 3
+    shape = (img_width, img_height)
+    video_id = ''
+
+    if string_is_link(video_location):
+        video_id = video_location.split('?v=')[-1]
+
+        video_path = download_video(video_id, video_location, data_path, fps, verbose=verbose)
+        video_to_images(video_id, video_path, data_path, fps, verbose=verbose)
+    else:
+        video_id = video_location.split('/')[-1].split('.')[0]
+        if path_is_file(video_location) and '.mp4' in video_location:
+            video_to_images(video_id, video_location, data_path, fps, verbose=verbose)
+
+    working_folder = get_folder_name(data_path, video_id, fps)
+
+    df = create_filename_df(working_folder)
+    X = load_images(df, working_folder, shape)
+    
+    if verbose:
+        print('making ingame predictions')
+
+    ingame_model = load_model(ingame_model_path)
+    df = make_predictions(df, X, ingame_model, 'ingame', binary=True)
+    
+    if verbose:
+        print('making interestingness predictions')
+
+    interestingness_model = load_model(interestingness_model_path)
+    df = make_predictions_with_criteria(
+        df, X, interestingness_model, 'interestingness', ['ingame'], [1])
+
+    base_path = working_folder + 'analysis_' + str(int(time()))
+    csv_path =  base_path + '.csv'
+    json_path = base_path + '.json'
+
+    print('writing result to files')
+
+    if df.shape[0] > 1:
+        df.to_csv(csv_path, index_label='filename', index=True)
+        df.to_json(json_path)
+
+    return json_path
+
 def main(args):
     if len(args) < 5:
         print('some params are missing, sry')
-        print('give yt link or folder with images, ingame model,')
-        print('interestingness model, tmp/ path, fps (default=0.5)')
+        print('give yt link or path to video, ingame model,')
+        print('interestingness model, tmp/ path, fps')
         return -1
 
     video_location = args[1]
@@ -134,42 +185,12 @@ def main(args):
     interestingness_model_path = args[3]
     data_path = args[4]
     fps = 1
-    video_id = ''
-
-    img_width = 160
-    img_height = 90
-    img_channels = 3
-    shape = (img_width, img_height)
 
     if len(args) > 5:
         fps = float(args[5])
-
-    if string_is_link(video_location):
-        video_id = video_location.split('?v=')[-1]
-
-        video_path = download_video(video_id, video_location, data_path)
-        video_to_images(video_id, video_path, data_path)
-    else:
-        video_id = video_location.split('/')[-1].split('.')[0]
-        if path_is_file(video_location) and '.mp4' in video_location:
-            video_to_images(video_id, video_location, data_path)
-
-    working_folder = data_path + video_id + '/'
-
-    df = create_filename_df(working_folder)
-    X = load_images(df, working_folder, shape)
-
-    ingame_model = load_model(ingame_model_path)
-    df = make_predictions(df, X, ingame_model, 'ingame', binary=True)
-
-    interestingness_model = load_model(interestingness_model_path)
-    df = make_predictions_with_criteria(
-        df, X, interestingness_model, 'interestingness', ['ingame'], [1])
-
-    csv_path = working_folder + 'analysis_' + str(int(time())) + '.csv'
+    print('fps is {}'.format(fps))
     
-    if df.shape[0] > 1:
-        df.to_csv(csv_path, index_label='filename', index=True)
+    analyze(video_location, ingame_model_path, interestingness_model_path, data_path, fps)
 
 if __name__ == "__main__":
     main(sys.argv)
