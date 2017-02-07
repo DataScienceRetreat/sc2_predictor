@@ -17,20 +17,21 @@ The goal was a pipeline which reads a video link and outputs the interestingness
 A peak in interestingness over a short time signals an exciting moment, short highlight clips are selected based on these change in the time series. 
 The pipeline includes two neural networks, one for recognising in-game images and one for the regression output.
 
-Read more on [Medium](https://medium.com/highlighthero/ai-powered-highlights-9f4d55986445#.5dhc4ade3)
+[Read more on Medium](https://medium.com/highlighthero/ai-powered-highlights-9f4d55986445#.5dhc4ade3)  
+
 [![Finding highlights in videogame video replays - Data Science Retreat portfolio project](http://img.youtube.com/vi/cUtNtR18sEY/0.jpg)](https://www.youtube.com/watch?v=cUtNtR18sEY "Finding highlights in videogame video replays - Data Science Retreat portfolio project")
 
 ## How can I use this?
 
 ### Workflow for interestingness regression
 1. Download videos using ```get-videos.py``` with text file with youtube links of replays (for example: ```video_list.txt```)
-2. Run ```classify-thumbnails.py`` to classify images (manually or with existing neural network)
+2. Run ```classify-thumbnails.py``` to classify images (manually or with existing neural network)
 3. Run ```prepare-files-for-learning.py``` to copy images into their correct folders
 4. Run ```learn-regression.py``` to train a model for interestingness prediction
 
 ### Workflow for ingame classification
 1. Download videos using ```get-videos.py``` with text file with youtube links of replays (for example: ```video_list.txt```)
-2. Run ```classify-thumbnails.py`` to classify images (manually or with existing neural network)
+2. Run ```classify-thumbnails.py``` to classify images (manually or with existing neural network)
 3. Run ```learn-regression.py``` to train a model for ingame classification
 
 ## ingame classification:
