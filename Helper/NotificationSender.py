@@ -3,7 +3,7 @@ import os
 
 class NotificationSender:
     def __init__(self, title):
-        self.pushover_key = 'u4C2RXvb3AdTqmDX2LDs5B4dUG1JqZ'
+        self.pushover_key = 'INSERT_PUSHOVER_KEY'
         self.title = title
 
     def notify(self, text):
